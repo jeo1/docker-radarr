@@ -6,7 +6,7 @@ networks:
 
 services:
   radarr-setup:
-    build: ./build/setup/
+    build: ./build/
     image: radarr-setup
     pull_policy: build
     container_name: radarr-setup
