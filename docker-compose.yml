@@ -1,20 +1,12 @@
----
-networks:
-  macvlan_network:
-    external: true
-    name: "${DOCKER_NETWORK}"
-
 services:
   nginx:
     image: nginx:latest
     pull_policy: always
     container_name: radarr-nginx
     restart: always
-    volumes:
-      - "${NGINX}/nginx.conf:/etc/nginx/nginx.conf"
-    networks:
-      macvlan_network:
-        ipv4_address: "${IP_ADDRESS}"
+    ports:
+      - 9000:7878
+      - 9001:8080
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -30,9 +22,6 @@ services:
       - "TZ=${TIMEZONE}"
     restart: always
     network_mode: "service:nginx"
-    depends_on:
-      qbittorrent:
-        condition: service_started
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -48,6 +37,3 @@ services:
     volumes:
       - "${QBITTORRENT_CONFIG}:/config"
       - "${DOWNLOADS}:/downloads"
-    depends_on:
-      nginx:
-        condition: service_started
