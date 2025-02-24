@@ -22,7 +22,7 @@ services:
     container_name: radarr
     volumes:
       - "${RADARR_CONFIG}:/config"
-      - "${MEDIA}:${ROOT_PATH}"
+      - "${MEDIA}:/${ROOT_PATH}"
       - "${DOWNLOADS}:/downloads"
     environment:
       - "PUID=1000"
