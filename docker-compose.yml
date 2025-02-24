@@ -1,53 +1,20 @@
----
-networks:
-  macvlan_network:
-    external: true
-    name: "${DOCKER_NETWORK}"
-
 services:
-  radarr-setup:
-    build: ./build/
-    image: radarr-setup
-    pull_policy: build
-    container_name: radarr-setup
-    volumes:
-      - "${SSL}:/ssl"
-      - "${NGINX}:/nginx"
-    environment:
-      - "ip=${IP_ADDRESS}"
-
-  nginx:
-    image: nginx:latest
-    pull_policy: always
-    container_name: radarr-nginx
-    restart: always
-    volumes:
-      - "${NGINX}/nginx.conf:/etc/nginx/nginx.conf"
-      - "${SSL}:/ssl"
-    networks:
-      macvlan_network:
-        ipv4_address: "${IP_ADDRESS}"
-    depends_on:
-      radarr-setup:
-        condition: service_completed_successfully
-
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     pull_policy: always
     container_name: radarr
     volumes:
       - "${RADARR_CONFIG}:/config"
-      - "${MEDIA}:${ROOT_PATH}"
+      - "${MEDIA}:/${ROOT_PATH}"
       - "${DOWNLOADS}:/downloads"
     environment:
       - "PUID=1000"
       - "PGID=1000"
       - "TZ=${TIMEZONE}"
     restart: always
-    network_mode: "service:nginx"
-    depends_on:
-      qbittorrent:
-        condition: service_started
+    ports:
+      - "${EXTERNAL_RADARR_PORT}:7878"
+      - "${EXTERNAL_QBITTORRENT_PORT}:8080"
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -59,10 +26,7 @@ services:
       - "TZ=${TIMEZONE}"
       - "WEBUI_PORT=8080"
     restart: always
-    network_mode: "service:nginx"
+    network_mode: "service:radarr"
     volumes:
       - "${QBITTORRENT_CONFIG}:/config"
       - "${DOWNLOADS}:/downloads"
-    depends_on:
-      nginx:
-        condition: service_started
