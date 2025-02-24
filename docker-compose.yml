@@ -1,13 +1,4 @@
 services:
-  nginx:
-    image: nginx:latest
-    pull_policy: always
-    container_name: radarr-nginx
-    restart: always
-    ports:
-      - 9000:7878
-      - 9001:8080
-
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     pull_policy: always
@@ -21,7 +12,9 @@ services:
       - "PGID=1000"
       - "TZ=${TIMEZONE}"
     restart: always
-    network_mode: "service:nginx"
+    ports:
+      - "${EXTERNAL_RADARR_PORT}:7878"
+      - "${EXTERNAL_QBITTORRENT_PORT}:8080"
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -33,7 +26,7 @@ services:
       - "TZ=${TIMEZONE}"
       - "WEBUI_PORT=8080"
     restart: always
-    network_mode: "service:nginx"
+    network_mode: "service:radarr"
     volumes:
       - "${QBITTORRENT_CONFIG}:/config"
       - "${DOWNLOADS}:/downloads"
